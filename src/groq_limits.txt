@@ -1,0 +1,11 @@
+Service: Groq
+Plan: Free
+Model: openai/gpt-oss-20b
+
+Requests per minute (RPM): 1000
+Requests per day (RPD): 500000
+Tokens per minute (TPM): 250000
+Tokens per day (TPD): Not listed
+In-flight concurrency limit: Not listed
+
+Source: https://console.groq.com/docs/rate-limits

@@ -1,0 +1,1311 @@
+
+QUESTION 1: What is scaled dot-product attention?
+EXPECTED PAPER: 1706.03762
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 4
+Text: Scaled Dot-Product Attention
+ Multi-Head Attention
+Figure 2: (left) Scaled Dot-Product Attention. (right) Multi-Head Attention consists of several
+attention layers running in parallel.
+of the values, where the weight assigned to each value is computed by a compatibility function of the
+query with the corresponding key.
+3.2.1 Scaled Dot-Product Attention
+We call our particular attention "Scaled Dot-Product Attention" (Figure 2). The input consists of
+queries and keys of dimension dk, and values of dimension dv. We compute the dot products of the
+query with all keys, divide each by √dk, and apply a softmax function to obtain the weights on the
+values.
+In practice, we compute the attention function on a set of queries simultaneously, packed together
+into a matrix Q. The keys and values are also packed together into matrices K and V . We compute
+the matrix of outputs as:
+Attention(Q, K, V) = softmax(QK T √dk )V (1)
+The two most commonly used attention functions are additive attention [2], and dot-product (multi-
+plicative) attention. Dot-product attention is identical to our algorithm, except for the scaling factor
+of 1√dk . Additive attention computes the compatibility function using 
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 1
+Text: Provided proper attribution is provided, Google hereby grants permission to
+reproduce the tables and figures in this paper solely for use in journalistic or
+scholarly works.
+Attention Is All You Need
+Ashish Vaswani∗
+Google Brain
+avaswani@google.com
+Noam Shazeer∗
+Google Brain
+noam@google.com
+Niki Parmar∗
+Google Research
+nikip@google.com
+Jakob Uszkoreit∗
+Google Research
+usz@google.com
+Llion Jones∗
+Google Research
+llion@google.com
+Aidan N. Gomez∗ †
+University of Toronto
+aidan@cs.toronto.edu
+Łukasz Kaiser∗
+Google Brain
+lukaszkaiser@google.com
+Illia Polosukhin∗ ‡
+illia.polosukhin@gmail.com
+Abstract
+The dominant sequence transduction models are based on complex recurrent or
+convolutional neural networks that include an encoder and a decoder. The best
+performing models also connect the encoder and decoder through an attention
+mechanism. We propose a new simple network architecture, the Transformer,
+based solely on attention mechanisms, dispensing with recurrence and convolutions
+entirely. Experiments on two machine translation tasks show these models to
+be superior in quality while being more parallelizable and requiring significantly
+less time to train. Our model achieves 28.4 BLEU on th
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 5
+Text: output values. These are concatenated and once again projected, resulting in the final values, as
+depicted in Figure 2.
+Multi-head attention allows the model to jointly attend to information from different representation
+subspaces at different positions. With a single attention head, averaging inhibits this.
+MultiHead(Q, K, V) = Concat(head1, ...,headh)W O
+where headi = Attention(QW Q i , KWK i , V WV i )
+Where the projections are parameter matricesW Q i ∈ Rdmodel×dk, W K i ∈ Rdmodel×dk, W V i ∈ Rdmodel×dv
+and W O ∈ Rhdv×dmodel.
+In this work we employ h = 8 parallel attention layers, or heads. For each of these we use
+dk = dv = dmodel/h = 64. Due to the reduced dimension of each head, the total computational cost
+is similar to that of single-head attention with full dimensionality.
+3.2.3 Applications of Attention in our Model
+The Transformer uses multi-head attention in three different ways:
+• In "encoder-decoder attention" layers, the queries come from the previous decoder layer,
+and the memory keys and values come from the output of the encoder. This allows every
+position in the decoder to attend over all positions in the input sequence. This mimics the
+typical encoder-decoder at
+
+ANSWER:
+Scaled dot‑product attention is a way to compute attention weights using the dot product of a query with each key.  
+1. For each query vector **q** and each key vector **k**, compute the dot product **q·k**.  
+2. Divide each dot product by the square root of the key dimension \( \sqrt{d_k} \) to keep the values in a reasonable range.  
+3. Apply a softmax to these scaled scores to get a probability distribution over the keys.  
+4. Use this distribution to weight the corresponding value vectors **v** and sum them to produce the output.  
+
+Mathematically:  
+
+\[
+\text{Attention}(Q,K,V)=\text{softmax}\!\left(\frac{QK^{\top}}{\sqrt{d_k}}\right)V
+\]
+
+This is the attention function used in the Transformer paper (Ashish Vaswani et al., “Attention Is All You Need”, arXiv:1706.03762 v7, p. 4).
+STATUS: ok
+------------------------------------------------------------
+
+QUESTION 2: Why are attention scores divided by the square root of the key dimension?
+EXPECTED PAPER: 1706.03762
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 35
+Text: Phan et al. (2024) and Vieira et al. (2024) propose various algorithms for converting a language model over tokens into a
+language model over characters or bytes. This helps alleviate some limitations of tokenizers such as the "prompt boundary"
+problem, the ability to compare different LLMs with different tokenizers, and simply produces better estimates of a language
+model’s true compressive ability (as measured by bits-per-byte). However, such algorithms are complex and expensive, and
+compared to direct byte-level models they are not practical for use during inference decoding (repeated autoregressive
+sampling).
+B FLOPs Computation
+We largely follow Hoffmann et al. (2022) with two marginally updated computations: (1) add computations for Mamba-
+2 (Dao and Gu 2024), and (2) modify computations in MLP blocks as we use the recent Transformer++ architecture.
+Assuming that all query, key, and value share the same num_heads and head_dim, we calculate the forward pass FLOPs as
+follows:
+• Embeddings: 2× seq_len× vocab_size× d_model
+• Attention:
+– 𝑄𝐾𝑉 projections: 2× 3× seq_len× d_model×( num_heads× head_dim)
+– Attention Logit Calculation: 2× seq_len× seq_len×( num_heads× head_dim)
+– Atten
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 6
+Text: Table 1: Maximum path lengths, per-layer complexity and minimum number of sequential operations
+for different layer types. n is the sequence length, d is the representation dimension, k is the kernel
+size of convolutions and r the size of the neighborhood in restricted self-attention.
+Layer Type Complexity per Layer Sequential Maximum Path Length
+Operations
+Self-Attention O(n2 · d) O(1) O(1)
+Recurrent O(n · d2) O(n) O(n)
+Convolutional O(k · n · d2) O(1) O(logk(n))
+Self-Attention (restricted) O(r · n · d) O(1) O(n/r)
+3.5 Positional Encoding
+Since our model contains no recurrence and no convolution, in order for the model to make use of the
+order of the sequence, we must inject some information about the relative or absolute position of the
+tokens in the sequence. To this end, we add "positional encodings" to the input embeddings at the
+bottoms of the encoder and decoder stacks. The positional encodings have the same dimension dmodel
+as the embeddings, so that the two can be summed. There are many choices of positional encodings,
+learned and fixed [9].
+In this work, we use sine and cosine functions of different frequencies:
+P E(pos,2i) = sin(pos/100002i/dmodel)
+P E(pos,2i+1) = cos(po
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 4
+Text: Scaled Dot-Product Attention
+ Multi-Head Attention
+Figure 2: (left) Scaled Dot-Product Attention. (right) Multi-Head Attention consists of several
+attention layers running in parallel.
+of the values, where the weight assigned to each value is computed by a compatibility function of the
+query with the corresponding key.
+3.2.1 Scaled Dot-Product Attention
+We call our particular attention "Scaled Dot-Product Attention" (Figure 2). The input consists of
+queries and keys of dimension dk, and values of dimension dv. We compute the dot products of the
+query with all keys, divide each by √dk, and apply a softmax function to obtain the weights on the
+values.
+In practice, we compute the attention function on a set of queries simultaneously, packed together
+into a matrix Q. The keys and values are also packed together into matrices K and V . We compute
+the matrix of outputs as:
+Attention(Q, K, V) = softmax(QK T √dk )V (1)
+The two most commonly used attention functions are additive attention [2], and dot-product (multi-
+plicative) attention. Dot-product attention is identical to our algorithm, except for the scaling factor
+of 1√dk . Additive attention computes the compatibility function using 
+
+ANSWER:
+The division by √dₖ (the key dimension) is a *scaling factor* that keeps the dot‑product values in a reasonable range before the softmax is applied.  
+When the query and key vectors are of high dimensionality, their dot product can grow large in magnitude. A large pre‑softmax score pushes the softmax toward a very “peaked” distribution, which can make learning difficult and reduce the effective gradient. By dividing by √dₖ the authors of the original Transformer paper ensured that the typical magnitude of the scores remains close to 1, keeping the softmax well‑behaved and improving training stability (see “Scaled Dot‑Product Attention” in *Attention Is All You Need*, arXiv:1706.03762 v7, PDF page 4).
+STATUS: ok
+------------------------------------------------------------
+
+QUESTION 3: What is multi-head attention?
+EXPECTED PAPER: 1706.03762
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 4
+Text: Scaled Dot-Product Attention
+ Multi-Head Attention
+Figure 2: (left) Scaled Dot-Product Attention. (right) Multi-Head Attention consists of several
+attention layers running in parallel.
+of the values, where the weight assigned to each value is computed by a compatibility function of the
+query with the corresponding key.
+3.2.1 Scaled Dot-Product Attention
+We call our particular attention "Scaled Dot-Product Attention" (Figure 2). The input consists of
+queries and keys of dimension dk, and values of dimension dv. We compute the dot products of the
+query with all keys, divide each by √dk, and apply a softmax function to obtain the weights on the
+values.
+In practice, we compute the attention function on a set of queries simultaneously, packed together
+into a matrix Q. The keys and values are also packed together into matrices K and V . We compute
+the matrix of outputs as:
+Attention(Q, K, V) = softmax(QK T √dk )V (1)
+The two most commonly used attention functions are additive attention [2], and dot-product (multi-
+plicative) attention. Dot-product attention is identical to our algorithm, except for the scaling factor
+of 1√dk . Additive attention computes the compatibility function using 
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 5
+Text: output values. These are concatenated and once again projected, resulting in the final values, as
+depicted in Figure 2.
+Multi-head attention allows the model to jointly attend to information from different representation
+subspaces at different positions. With a single attention head, averaging inhibits this.
+MultiHead(Q, K, V) = Concat(head1, ...,headh)W O
+where headi = Attention(QW Q i , KWK i , V WV i )
+Where the projections are parameter matricesW Q i ∈ Rdmodel×dk, W K i ∈ Rdmodel×dk, W V i ∈ Rdmodel×dv
+and W O ∈ Rhdv×dmodel.
+In this work we employ h = 8 parallel attention layers, or heads. For each of these we use
+dk = dv = dmodel/h = 64. Due to the reduced dimension of each head, the total computational cost
+is similar to that of single-head attention with full dimensionality.
+3.2.3 Applications of Attention in our Model
+The Transformer uses multi-head attention in three different ways:
+• In "encoder-decoder attention" layers, the queries come from the previous decoder layer,
+and the memory keys and values come from the output of the encoder. This allows every
+position in the decoder to attend over all positions in the input sequence. This mimics the
+typical encoder-decoder at
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 3
+Text: Figure 1: The Transformer - model architecture.
+The Transformer follows this overall architecture using stacked self-attention and point-wise, fully
+connected layers for both the encoder and decoder, shown in the left and right halves of Figure 1,
+respectively.
+3.1 Encoder and Decoder Stacks
+Encoder: The encoder is composed of a stack of N = 6 identical layers. Each layer has two
+sub-layers. The first is a multi-head self-attention mechanism, and the second is a simple, position-
+wise fully connected feed-forward network. We employ a residual connection [11] around each of
+the two sub-layers, followed by layer normalization [ 1]. That is, the output of each sub-layer is
+LayerNorm(x + Sublayer(x)), where Sublayer(x) is the function implemented by the sub-layer
+itself. To facilitate these residual connections, all sub-layers in the model, as well as the embedding
+layers, produce outputs of dimension dmodel = 512.
+Decoder: The decoder is also composed of a stack of N = 6identical layers. In addition to the two
+sub-layers in each encoder layer, the decoder inserts a third sub-layer, which performs multi-head
+attention over the output of the encoder stack. Similar to the encoder, we emp
+
+ANSWER:
+Multi‑head attention is a way of running several attention mechanisms in parallel so that the model can focus on different parts of the input at the same time. For each of the \(h\) heads we linearly project the queries, keys and values with separate matrices \(W_Q^i,\,W_K^i,\,W_V^i\), compute scaled dot‑product attention, and obtain a head output \(\text{head}_i = \text{Attention}(QW_Q^i,\,KW_K^i,\,VW_V^i)\). The \(h\) head outputs are then concatenated and projected again with \(W_O\) to produce the final result:
+
+\[
+\text{MultiHead}(Q,K,V)=\text{Concat(head}_1,\dots,\text{head}_h)W_O .
+\]
+
+This lets the model jointly attend to information from different representation subspaces at different positions, avoiding the averaging effect of a single head【Attention Is All You Need, arXiv:1706.03762 v7, p.4–5】.
+STATUS: ok
+------------------------------------------------------------
+
+QUESTION 4: What is positional encoding in the Transformer?
+EXPECTED PAPER: 1706.03762
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 6
+Text: Table 1: Maximum path lengths, per-layer complexity and minimum number of sequential operations
+for different layer types. n is the sequence length, d is the representation dimension, k is the kernel
+size of convolutions and r the size of the neighborhood in restricted self-attention.
+Layer Type Complexity per Layer Sequential Maximum Path Length
+Operations
+Self-Attention O(n2 · d) O(1) O(1)
+Recurrent O(n · d2) O(n) O(n)
+Convolutional O(k · n · d2) O(1) O(logk(n))
+Self-Attention (restricted) O(r · n · d) O(1) O(n/r)
+3.5 Positional Encoding
+Since our model contains no recurrence and no convolution, in order for the model to make use of the
+order of the sequence, we must inject some information about the relative or absolute position of the
+tokens in the sequence. To this end, we add "positional encodings" to the input embeddings at the
+bottoms of the encoder and decoder stacks. The positional encodings have the same dimension dmodel
+as the embeddings, so that the two can be summed. There are many choices of positional encodings,
+learned and fixed [9].
+In this work, we use sine and cosine functions of different frequencies:
+P E(pos,2i) = sin(pos/100002i/dmodel)
+P E(pos,2i+1) = cos(po
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 9
+Text: Table 3: Variations on the Transformer architecture. Unlisted values are identical to those of the base
+model. All metrics are on the English-to-German translation development set, newstest2013. Listed
+perplexities are per-wordpiece, according to our byte-pair encoding, and should not be compared to
+per-word perplexities.
+N d model dff h d k dv Pdrop ϵls train PPL BLEU params steps (dev) (dev) ×106
+base 6 512 2048 8 64 64 0.1 0.1 100K 4.92 25.8 65
+(A)
+1 512 512 5.29 24.9
+4 128 128 5.00 25.5
+16 32 32 4.91 25.8
+32 16 16 5.01 25.4
+(B) 16 5.16 25.1 58 32 5.01 25.4 60
+(C)
+2 6.11 23.7 36
+4 5.19 25.3 50
+8 4.88 25.5 80
+256 32 32 5.75 24.5 28
+1024 128 128 4.66 26.0 168
+1024 5.12 25.4 53
+4096 4.75 26.2 90
+(D)
+0.0 5.77 24.6
+0.2 4.95 25.5
+0.0 4.67 25.3
+0.2 5.47 25.7
+(E) positional embedding instead of sinusoids 4.92 25.7
+big 6 1024 4096 16 0.3 300K 4.33 26.4 213
+development set, newstest2013. We used beam search as described in the previous section, but no
+checkpoint averaging. We present these results in Table 3.
+In Table 3 rows (A), we vary the number of attention heads and the attention key and value dimensions,
+keeping the amount of computation constant, as described in Section 3.2.2. Whil
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 8
+Text: Table 2: The Transformer achieves better BLEU scores than previous state-of-the-art models on the
+English-to-German and English-to-French newstest2014 tests at a fraction of the training cost.
+Model
+BLEU Training Cost (FLOPs)
+EN-DE EN-FR EN-DE EN-FR
+ByteNet [18] 23.75
+Deep-Att + PosUnk [39] 39.2 1.0 · 1020
+GNMT + RL [38] 24.6 39.92 2.3 · 1019 1.4 · 1020
+ConvS2S [9] 25.16 40.46 9.6 · 1018 1.5 · 1020
+MoE [32] 26.03 40.56 2.0 · 1019 1.2 · 1020
+Deep-Att + PosUnk Ensemble [39] 40.4 8.0 · 1020
+GNMT + RL Ensemble [38] 26.30 41.16 1.8 · 1020 1.1 · 1021
+ConvS2S Ensemble [9] 26.36 41.29 7.7 · 1019 1.2 · 1021
+Transformer (base model) 27.3 38.1 3.3 · 1018
+Transformer (big) 28.4 41.8 2.3 · 1019
+Residual Dropout We apply dropout [33] to the output of each sub-layer, before it is added to the
+sub-layer input and normalized. In addition, we apply dropout to the sums of the embeddings and the
+positional encodings in both the encoder and decoder stacks. For the base model, we use a rate of
+Pdrop = 0.1.
+Label Smoothing During training, we employed label smoothing of value ϵls = 0.1 [36]. This
+hurts perplexity, as the model learns to be more unsure, but improves accuracy and BLEU score.
+6 Results
+6.1 
+
+ANSWER:
+Positional encoding lets a Transformer use token order even though it has no recurrence or convolution. The model adds a vector that depends on the token’s position to each input embedding. These vectors have the same size as the embeddings so they can be summed. The paper uses sine‑ and cosine‑functions of different frequencies as a fixed encoding, but notes that other learned or fixed choices are possible. (Attention Is All You Need, arXiv:1706.03762 v7, p. 6)
+STATUS: ok
+------------------------------------------------------------
+
+QUESTION 5: Why does the Transformer use self-attention?
+EXPECTED PAPER: 1706.03762
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 3
+Text: Figure 1: The Transformer - model architecture.
+The Transformer follows this overall architecture using stacked self-attention and point-wise, fully
+connected layers for both the encoder and decoder, shown in the left and right halves of Figure 1,
+respectively.
+3.1 Encoder and Decoder Stacks
+Encoder: The encoder is composed of a stack of N = 6 identical layers. Each layer has two
+sub-layers. The first is a multi-head self-attention mechanism, and the second is a simple, position-
+wise fully connected feed-forward network. We employ a residual connection [11] around each of
+the two sub-layers, followed by layer normalization [ 1]. That is, the output of each sub-layer is
+LayerNorm(x + Sublayer(x)), where Sublayer(x) is the function implemented by the sub-layer
+itself. To facilitate these residual connections, all sub-layers in the model, as well as the embedding
+layers, produce outputs of dimension dmodel = 512.
+Decoder: The decoder is also composed of a stack of N = 6identical layers. In addition to the two
+sub-layers in each encoder layer, the decoder inserts a third sub-layer, which performs multi-head
+attention over the output of the encoder stack. Similar to the encoder, we emp
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 2
+Text: 1 Introduction
+Recurrent neural networks, long short-term memory [13] and gated recurrent [7] neural networks
+in particular, have been firmly established as state of the art approaches in sequence modeling and
+transduction problems such as language modeling and machine translation [ 35, 2, 5]. Numerous
+efforts have since continued to push the boundaries of recurrent language models and encoder-decoder
+architectures [38, 24, 15].
+Recurrent models typically factor computation along the symbol positions of the input and output
+sequences. Aligning the positions to steps in computation time, they generate a sequence of hidden
+states ht, as a function of the previous hidden state ht−1 and the input for position t. This inherently
+sequential nature precludes parallelization within training examples, which becomes critical at longer
+sequence lengths, as memory constraints limit batching across examples. Recent work has achieved
+significant improvements in computational efficiency through factorization tricks [21] and conditional
+computation [32], while also improving model performance in case of the latter. The fundamental
+constraint of sequential computation, however, remains.
+Attention m
+
+Paper: Attention Is All You Need
+arXiv: 1706.03762 v7
+PDF page: 5
+Text: output values. These are concatenated and once again projected, resulting in the final values, as
+depicted in Figure 2.
+Multi-head attention allows the model to jointly attend to information from different representation
+subspaces at different positions. With a single attention head, averaging inhibits this.
+MultiHead(Q, K, V) = Concat(head1, ...,headh)W O
+where headi = Attention(QW Q i , KWK i , V WV i )
+Where the projections are parameter matricesW Q i ∈ Rdmodel×dk, W K i ∈ Rdmodel×dk, W V i ∈ Rdmodel×dv
+and W O ∈ Rhdv×dmodel.
+In this work we employ h = 8 parallel attention layers, or heads. For each of these we use
+dk = dv = dmodel/h = 64. Due to the reduced dimension of each head, the total computational cost
+is similar to that of single-head attention with full dimensionality.
+3.2.3 Applications of Attention in our Model
+The Transformer uses multi-head attention in three different ways:
+• In "encoder-decoder attention" layers, the queries come from the previous decoder layer,
+and the memory keys and values come from the output of the encoder. This allows every
+position in the decoder to attend over all positions in the input sequence. This mimics the
+typical encoder-decoder at
+
+ANSWER:
+The Transformer uses self‑attention so that every token in a sequence can look directly at every other token at the same time.  
+With self‑attention, a layer computes, for each position, a weighted sum of all positions (using the token’s own query against all keys). This lets the model capture long‑range dependencies without the slow, step‑by‑step recurrence that RNNs use. Because each attention head can focus on different aspects of the input, the model can combine many views of the sequence in parallel, enabling efficient training and better handling of long sentences.  
+
+*Citation: “Attention Is All You Need”, arXiv:1706.03762 v7, PDF page 3.*
+STATUS: ok
+------------------------------------------------------------
+
+QUESTION 6: What is Moshi?
+EXPECTED PAPER: 2410.00037
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 64
+Text: Moshi: a speech-text foundation model for real-time dialogue
+F.2 Misspelling
+USER: I’d like to learn about Danyh Amendol?
+MOSHI: Sorry, I’m not sure what you’re referring to.
+USER: Oh, Danyh Amendola, the football player. The former football player.
+MOSHI: Okay, I know who Danny Amendola is. He is a former professional football
+wide receiver who played for the New England Patriots. He also played for the
+Miami Dolphins, Detroit Lions, and Houston Texans.
+USER: Okay,
+MOSHI: He was drafted by the New England Patriots in 2010.
+USER: and how about his college football
+MOSHI: He played college football for the Texas Tech Red Raiders. His career in the
+NFL,
+USER: okay,
+MOSHI: he was named an alternate for the 2011 Pro Bowl.
+USER: yeah,
+MOSHI: He also appeared in three Super Bowls, winning two.
+USER: yeah.
+USER: I’d like to learn about Maroom?
+MOSHI: I’m sorry, I did not catch that.
+USER: I’d like to learn about Maroon.
+MOSHI: Oh, Marron. Okay, well, let’s see. Maroon is a color that is a dark red or
+a brownish red. It is named after the French word for chestnut. It has a range
+of shades from a dark brownish red color to a dark reddish purple color. It’s also
+considered to be the compleme
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 65
+Text: Moshi: a speech-text foundation model for real-time dialogue
+F.3 V oice instructions
+USER: Pretend you are a relieved astronaut who lands on the moon. So Moshi, how
+does it feel to be finally back on the moon?
+MOSHI: (relieved) It’s an incredible feeling! I can’t believe we made it back safely.
+USER: I’m glad to hear that. Was it as incredible as you thought it would be?
+MOSHI: (relieved) Oh, definitely! The moon is even more beautiful up close. I can’t
+wait to start exploring more.
+USER: Yeah, I remember when we trained for this mission. It felt like such a long
+shot.
+MOSHI: (relieved) I know, right? But everything worked out perfectly. It’s amazing
+how far humanity has come in space exploration.
+USER: That’s for sure! Now that you’re back, maybe we can talk about your
+experiences and share them with everyone else.
+MOSHI: (relieved) Definitely. I’ve got so much to share about our findings and
+observations.
+USER: Cool, I’m looking forward to hearing all about it. But first, let’s just soak in
+this moment, okay?
+MOSHI: (relieved) Of course. Let’s enjoy the view for a little while longer.
+USER: Totally. Here’s to another successful mission on the moon!
+MOSHI: (relieved) *raises fists
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 19
+Text: Moshi: a speech-text foundation model for real-time dialogue
+{{context}}
+Based on information from the previous paragraph, write the summary
+of a conversation about {{title}} between Blake and Moshi. The
+summary must be 2 sentences long, and start with "They" or "The
+speakers".
+where {{context}} refers to paragraphs from Wikipedia or StackExchange and {{title}}
+is the corresponding title. Then, we generate the full transcript with the prompt:
+{{context}}
+Write the transcript of a conversation between Blake and Moshi.
+{{summary}} Moshi is knowledgeable about the topic. Use some
+backchanneling. Use short turns.
+Similarly, to give Moshi information about itself and the Kyutai lab, we generate para-
+graphs describing both and use them as additional context.
+Second, we produce interactions containing instructions about Moshi’s voice, such as
+the other speaker requesting Moshi to speak with an angry voice or like a pirate. Our
+first strategy is to generate single turn interactions where the model is instructed to tell
+a sentence, a monologue or a poem about an entity, belonging to a high level category
+such as “sports” or “animals”, using a particular voice. The voice requested by the ot
+
+ANSWER:
+Moshi is a speech‑text foundation model designed for real‑time dialogue. It can generate spoken responses and interact conversationally, as shown in the example exchanges with users. (Moshi: a speech‑text foundation model for real‑time dialogue, arXiv:2410.00037 v1, PDF page 64)
+STATUS: ok
+------------------------------------------------------------
+
+QUESTION 7: How does Moshi support real-time dialogue?
+EXPECTED PAPER: 2410.00037
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 41
+Text: Moshi: a speech-text foundation model for real-time dialogue
+networks (Zhu, 2018; Fernandez et al., 2022). In view of our analysis, adding some
+tolerance to moderate temporal shift is especially important.
+• The text could be marked instead of the audio. One downside is that text is a lower-
+capacity channel for adding a mark, and would not be sufficient for short conversations.
+Another problem is that detecting the mark requires a reliable transcription.
+Last but not least, some exploration is needed to ensure that it is not trivial to remove
+the watermarking procedure when open-sourcing a model. As an example, the only thing
+to remove the watermark with the implementation associated with the stable diffusion
+model was to comment a line of code. 22 A promising work in this direction is the study
+by Sander et al. (2024), who show that it is possible to detect when a model has been
+trained on watermarked text. A method exploiting this observation has just been shared
+by San Roman et al. (2024a): the watermarking is implicitly added through the training
+data, in the spirit of “radioactive data” by Sablayrolles et al. (2020).
+7 Conclusion
+In this work, we introduce Moshi, the first re
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 12
+Text: Moshi: a speech-text foundation model for real-time dialogue
+dimension of 1024, followed by average pooling with a stride of 4 and a kernel size of 8. In-
+terestingly, we observed that it was critical for performance to perform this average pooling
+in a non-causal way, which is compatible with streaming inference as these embeddings are
+only used during training. We then compute a cosine distance between the output of the
+first quantizer and the transformed WavLM embeddings, to perform distillation. Table 3
+shows that this distillation loss conflicts with reconstruction and adversarial losses targeting
+quality. Indeed, while distillation significantly improves the phonetic discriminability of the
+first quantizer (as measured by ABX (Schatz et al., 2013)), it also affects audio quality
+negatively. We hypothesize that this is due to distilling semantic information into the first
+level of a single R VQ: As higher-order quantizers operate on the residual of the first one,
+the latter needs to trade audio quality for phonetic discriminability. We address this issue
+by proposing a split R VQ. Rather than a single R VQ with 8 levels, we distill semantic
+information into a plain VQ and appl
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 1
+Text: Moshi: a speech-text foundation model for real-time dialogue
+Moshi: a speech-text foundation model for real-time dialogue
+Alexandre D´ efossez∗ alex@kyutai.org
+Laurent Mazar´ e∗
+Manu Orsini
+Am´ elie Royer
+Patrick P´ erez
+Herv´ e J´ egou
+Edouard Grave∗
+Neil Zeghidour∗ neil@kyutai.org
+Kyutai
+∗Equal contribution
+Abstract
+We introduce Moshi, a speech-text foundation model and full-duplex spoken dialogue frame-
+work. Current systems for spoken dialogue rely on pipelines of independent components,
+namely voice activity detection, speech recognition, textual dialogue and text-to-speech.
+Such frameworks cannot emulate the experience of real conversations. First, their complex-
+ity induces a latency of several seconds between interactions. Second, text being the inter-
+mediate modality for dialogue, non-linguistic information that modifies meaning— such as
+emotion or non-speech sounds— is lost in the interaction. Finally, they rely on a segmenta-
+tion into speaker turns, which does not take into account overlapping speech, interruptions
+and interjections. Moshi solves these independent issues altogether by casting spoken dia-
+logue as speech-to-speech generation. Starting from a text langua
+
+ANSWER:
+REQUEST ERROR: RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m70101z9en9tk3jjsr213xt1` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 7175, Requested 1271. Please try again in 3.345s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+STATUS: error
+------------------------------------------------------------
+
+QUESTION 8: What is the role of the speech-text model in Moshi?
+EXPECTED PAPER: 2410.00037
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 62
+Text: Moshi: a speech-text foundation model for real-time dialogue
+Appendix F. Synthetic transcripts generation for fine-tuning
+In this section, we provide examples of synthetic transcripts.
+F.1 General knowledge
+USER: Hey, I’ve been researching a bit about information theory, and I’ve come across
+this concept of entropy. What is it?
+MOSHI: Oh, that’s an interesting topic. Entropy, in information theory, is a measure
+of the average level of information, surprise, or uncertainty inherent to a random
+variable’s p ossible outcomes. It’s actually a very useful concept in communication
+and computer science.
+USER: So how does it work?
+MOSHI: Entropy is calculated using a formula where it’s negative sum of the products
+of each possible outcome’s probability and its logarithm to a base, usually base-2 or
+base-e. T he higher the entropy, the greater the uncertainty or information, and vice
+versa.
+USER: Okay, that’s interesting. How does it relate to communication and computer
+science?
+MOSHI: In communication and computer science, entropy plays a crucial role, espe-
+cially in the field of error-correcting codes and compression methods. Imagine a
+source sending a message, and each bit has a certain
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 6
+Text: Moshi: a speech-text foundation model for real-time dialogue
+Figure 1: Overview of Moshi . Moshi is a speech-text foundation model which enables
+real-time spoken dialogue. The main components of Moshi’s architecture are: a bespoke
+text language model backbone (Helium, see Section 3.2); a neural audio codec with residual
+vector quantization and with semantic knowledge distilled from a self-supervised speech
+model (Mimi, Section 3.3); the streaming, hierarchical generation of semantic and acoustic
+tokens for both the user and Moshi, along with time-aligned text tokens for Moshi when
+using Inner Monologue (Section 3.4).
+been proposed by Wang et al. (2024), with an ASR system running in parallel to a text
+generator that feeds into a streaming TTS. While this allows modeling more complex sce-
+narios than previous approaches, it still relies on a cascaded pipeline and models both the
+user’s and the system’s speech into a single token stream, which is challenging in presence
+of significant overlap. The only previous full-duplex dialogue system is dGSLM (Nguyen
+et al., 2023), which models user and system speech as separate audio token streams and pro-
+poses a Siamese architecture to proces
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 1
+Text: Moshi: a speech-text foundation model for real-time dialogue
+Moshi: a speech-text foundation model for real-time dialogue
+Alexandre D´ efossez∗ alex@kyutai.org
+Laurent Mazar´ e∗
+Manu Orsini
+Am´ elie Royer
+Patrick P´ erez
+Herv´ e J´ egou
+Edouard Grave∗
+Neil Zeghidour∗ neil@kyutai.org
+Kyutai
+∗Equal contribution
+Abstract
+We introduce Moshi, a speech-text foundation model and full-duplex spoken dialogue frame-
+work. Current systems for spoken dialogue rely on pipelines of independent components,
+namely voice activity detection, speech recognition, textual dialogue and text-to-speech.
+Such frameworks cannot emulate the experience of real conversations. First, their complex-
+ity induces a latency of several seconds between interactions. Second, text being the inter-
+mediate modality for dialogue, non-linguistic information that modifies meaning— such as
+emotion or non-speech sounds— is lost in the interaction. Finally, they rely on a segmenta-
+tion into speaker turns, which does not take into account overlapping speech, interruptions
+and interjections. Moshi solves these independent issues altogether by casting spoken dia-
+logue as speech-to-speech generation. Starting from a text langua
+
+ANSWER:
+REQUEST ERROR: RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m70101z9en9tk3jjsr213xt1` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 7123, Requested 1276. Please try again in 2.9925s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+STATUS: error
+------------------------------------------------------------
+
+QUESTION 9: What is Mimi in the Moshi system?
+EXPECTED PAPER: 2410.00037
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 6
+Text: Moshi: a speech-text foundation model for real-time dialogue
+Figure 1: Overview of Moshi . Moshi is a speech-text foundation model which enables
+real-time spoken dialogue. The main components of Moshi’s architecture are: a bespoke
+text language model backbone (Helium, see Section 3.2); a neural audio codec with residual
+vector quantization and with semantic knowledge distilled from a self-supervised speech
+model (Mimi, Section 3.3); the streaming, hierarchical generation of semantic and acoustic
+tokens for both the user and Moshi, along with time-aligned text tokens for Moshi when
+using Inner Monologue (Section 3.4).
+been proposed by Wang et al. (2024), with an ASR system running in parallel to a text
+generator that feeds into a streaming TTS. While this allows modeling more complex sce-
+narios than previous approaches, it still relies on a cascaded pipeline and models both the
+user’s and the system’s speech into a single token stream, which is challenging in presence
+of significant overlap. The only previous full-duplex dialogue system is dGSLM (Nguyen
+et al., 2023), which models user and system speech as separate audio token streams and pro-
+poses a Siamese architecture to proces
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 41
+Text: Moshi: a speech-text foundation model for real-time dialogue
+networks (Zhu, 2018; Fernandez et al., 2022). In view of our analysis, adding some
+tolerance to moderate temporal shift is especially important.
+• The text could be marked instead of the audio. One downside is that text is a lower-
+capacity channel for adding a mark, and would not be sufficient for short conversations.
+Another problem is that detecting the mark requires a reliable transcription.
+Last but not least, some exploration is needed to ensure that it is not trivial to remove
+the watermarking procedure when open-sourcing a model. As an example, the only thing
+to remove the watermark with the implementation associated with the stable diffusion
+model was to comment a line of code. 22 A promising work in this direction is the study
+by Sander et al. (2024), who show that it is possible to detect when a model has been
+trained on watermarked text. A method exploiting this observation has just been shared
+by San Roman et al. (2024a): the watermarking is implicitly added through the training
+data, in the spirit of “radioactive data” by Sablayrolles et al. (2020).
+7 Conclusion
+In this work, we introduce Moshi, the first re
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 53
+Text: Moshi: a speech-text foundation model for real-time dialogue
+Appendix A. Additional ablation on Mimi codec
+Table 17: Ablation study on hyperparameters of the Mimi codec . We evaluate
+semantic modeling by reporting the error rate on a phonetic ABX discriminability task. To
+evaluate reconstruction quality, we compute VisQOL and MOSNet. “Quantization rate”
+refers to applying quantization to the latent space only 50% of the time during training
+(independently from quantizer dropout), as described in Section 3.3.
+Quantization Transformer Transformer WavLM Split ABX (↓) VisQOL ( ↑) MOSNet ( ↑)Rate in encoder in decoder distillation quantizer
+31.3% 2.37 2.85
+✓ 31.4% 2.30 2.82
+✓ 27.5% 2.30 2.93
+✓ ✓ 29.0% 2.25 2.94
+✓ 29.1% 2.65 2.86
+✓ ✓ 27.4% 2.69 2.83
+✓ ✓ 23.6% 2.72 2.89
+✓ ✓ ✓ 23.3% 2.82 2.89
+✓ ✓ ✓ ✓ 6.5% 2.13 2.87
+✓ ✓ ✓ ✓ 10.8% 2.68 2.84
+✓ ✓ ✓ ✓ 8.1% 2.49 2.71
+✓ ✓ ✓ ✓ 8.0% 2.36 2.88
+✓ ✓ ✓ ✓ ✓ 8.1% 2.72 2.89
+Appendix B. Audio matching and deduplication
+We have developed an audio matching system, whose objective is twofold:
+1. Deduplication of source content. Removing frequent duplicates to avoid overfitting
+and the regurgitation of audio content that is over-represented in the dataset, as 
+
+ANSWER:
+REQUEST ERROR: RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m70101z9en9tk3jjsr213xt1` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 7081, Requested 1427. Please try again in 3.81s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+STATUS: error
+------------------------------------------------------------
+
+QUESTION 10: How does Moshi handle speech generation?
+EXPECTED PAPER: 2410.00037
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 5
+Text: Moshi: a speech-text foundation model for real-time dialogue
+Speech-text Models. Such models typically start from a pretrained text language model
+and either finetune it to predict audio (Hassid et al., 2023), or propose a speech-text fine-
+tuning task (Rubenstein et al., 2023; Maiti et al., 2023; Nachmani et al., 2024; Nguyen
+et al., 2024; Mitsui et al., 2024): For instance, AudioPALM (Rubenstein et al., 2023) starts
+from a pretrained PALM (Chowdhery et al., 2022) model, and extends its text vocabu-
+lary with semantic audio tokens. Then, the model is trained for a mixture of speech-text
+tasks, including TTS, ASR and speech-to-speech translation. VoxTLM (Maiti et al., 2023)
+adopts a similar approach for TTS and ASR. While these models are trained in a supervised
+fashion with specific input and output sequences, Spirit-LM (Nguyen et al., 2024) uses tem-
+poral alignment between speech and its transcript to perform modality switch (from speech
+tokens to text tokens, or conversely) inside a sequence. This allows the model to learn
+consistent internal representations of language regardless of it being represented as text
+or speech, as measured through commonsense evaluation. Another app
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 15
+Text: Moshi: a speech-text foundation model for real-time dialogue
+Hello, PAD EPAD ⎵I ' m ⎵M oshi PAD PAD
+0
+...
+0
+... ... ... ... ... ... ... ... ...Acoustic tokens
+Semantic
+tokens
+Text
+tokens
+Moshi stream
+(speaks)
+PAD PAD ...
+...
+... ... ...
+...
+...
+0
+...
+0
+... ... ... ... ... ... ... ... ...
+...
+... ... ...
+...
+...
+User stream
+(listens)
+Hello, I'm Moshi. Hey Moshi!
+🤖 👤
+Acoustic
+tokens
+Semantic
+tokens
+Figure 4: Representation of the joint sequence modeled by Moshi . Each column
+represents the tokens for a given step in the joint sequence ( Vs,k) described in Equation 6
+with an acoustic delay τ = 1, e.g. the input of the Temporal Transformer for this step.
+Tokens are predicted from bottom to top in the Depth Transformer. At inference time,
+tokens under the dashed line (corresponding to Moshi) are sampled, while those above are
+fed from the user. This design allows for our model to handle overlapping speech turns.
+(At,q) and (A′ t,q), we simply apply the acoustic delay to both, and concatenate them into V ,
+extending Equation 4. In practice, A will correspond to Moshi, while A′ models the user.
+3.4.4 Inner Monologue
+While operating purely in the audio domain already yields convincing resu
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 2
+Text: Moshi: a speech-text foundation model for real-time dialogue
+1 Introduction
+Voice has provided a convenient interface to early conversational systems, from Alexa 1 to
+Siri2 and Google Assistant. 3 In this context, a “wake word” spoken by the user typically
+triggers an automatic speech recognition (ASR) system which transcribes the subsequent
+user’s request. Then, a natural language understanding (NLU) pipeline converts this query
+to a structured format used to produce a text answer through natural language genera-
+tion (NLG). Eventually, a text-to-speech (TTS) system tells the answer back to the user.
+While this process can handle short, constrained interactions (e.g. triggering an action or
+retrieving a fact), the rise of large language models (LLMs) (Brown et al., 2020; Hoffmann
+et al., 2022; Touvron et al., 2023a) has called for a consequent extension of voice interfaces to
+multi-turn, open-ended conversations. A solution to this challenge is handling the NLU and
+NLG with an LLM, while the ASR and TTS provide the voice interface during the user’s
+and the system’s turn respectively (Llama, 2024). This framework supports the current
+generation of spoken dialogue systems such as Ge
+
+ANSWER:
+REQUEST ERROR: RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m70101z9en9tk3jjsr213xt1` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 7024, Requested 1353. Please try again in 2.8275s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+STATUS: error
+------------------------------------------------------------
+
+QUESTION 11: What is dynamic chunking?
+EXPECTED PAPER: 2507.07955
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 21
+Text: Table 6: Related architectures. Comparison of related architectures, particularly those focused on byte-level modeling.
+H-Net is the first architecture that enables dynamic, multi-stage hierarchies. Extended discussion is provided in Appendix A.
+Class Autoregressive Chunking Mechanism Multi-stage Example ArchitecturesHierarchy
+Isotropic ✗ — — ByT5
+✓ — — MambaByte
+Hierarchical (static)
+✗ 𝑘-width pooling ✓
+Funnel-Transformer
+Canine
+Charformer
+✓ 𝑘-width pooling ✓
+Hourglass Transformer
+SaShiMi
+MegaByte
+Block Transformer
+MBLM
+AU-Net 3
+Hierarchical (external)
+✗ delimiters ✗ eByte WSF
+✓
+delimiters ✗
+DPT (Whitespaces)
+SpaceByte
+AU-Net 2
+entropy ✗ DPT (Entropy) BLT
+Hierarchical (dynamic) ✓
+soft matching ✗ MANTa
+soft gating ✗ MrT5
+stochastic reparameterization ✗ DPT (Gumbel)
+Hierarchical (dynamic) ✓ dynamic chunking ✓ H-Net
+21
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 3
+Text: 	D
+4NPPUIJOH.PEVMF
+nd of toke sTh e _ _
+ℰ
+$IVOLJOH
+!he_end_of_tokens
+!
+%FDIVOLJOH
+̂.
+̅.
+'!'!"#'!"$'!"%
+1−'!1−'!"#1−'!"$
+	E
+6QTBNQMFS
+	C
+%PXOTBNQMFS
+	B
+3PVUJOH.PEVMF
+/0
+-
+/0"
+0"#$
+*
+̅.
++"
+%ZOBNJD$IVOLJOHn_e
+ℳ
+Figure 1: (left) Architectural overview of H-Net with a two-stage hierarchical design (𝑆 = 2). (right) Dynamic Chunking
+(DC). ( bottom-right ) Key components of a chunking layer: (a) a routing module for dynamically drawing chunk
+boundaries, and (b) a downsampler that selectively retains vectors based on boundary indicators, reducing sequence length
+while preserving semantically significant positions. ( top-right ) Key components of a dechunking layer: (c) a smoothing
+module for converting discrete chunks into interpolated representations, and (d) an upsampler that restores compressed
+vectors to their original resolution based on boundary indicators. Linear in equation (3) and STE in equation (9) are omitted
+in the illustration for brevity.
+language model: with a single stage of dynamic chunking, a byte-level H-Net matches the perplexity and downstream
+performance of a strong BPE-tokenized Transformer at sizes exceeding 1B parameters. Empirically, the dynamic
+chunking mo
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 33
+Text: tuning entropy heuristics (iii) using hash embeddings, which can be considered an orthogonal architectural component
+which may be incorporated into H-Net as well if desired.
+Instead, we compared against SpaceByte (and our own stronger versions of SpaceByte), which we believe to be representative
+of the external-chunking family of methods and competitive to the entropy-based chunking strategy of BLT (for our main
+experiments such as English data).
+A.1.4 Dynamic Chunking
+The ideal tokenizer-free architecture would incorporate a dynamic chunking method that attempts to learn optimal
+segmentation strategies directly from data through gradient-based optimization. Such a method would be optimized jointly
+together with the outer (fine-resolution) and inner (coarse-resolution) networks, and be able to create boundaries that are
+content- and context- aware.
+The only prior work we are aware of that attempted a true dynamic chunking method is (one variant of) the Dynamic
+Pooling Transformer (DPT) (Nawrot, Chorowski, et al. 2023), which incorporates stochastic exploration mechanisms using
+Gumbel noise (Jang, Gu, and Poole 2017; Maddison, Mnih, and Teh 2017) to enable differentiable boundary se
+
+ANSWER:
+REQUEST ERROR: RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m70101z9en9tk3jjsr213xt1` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 6977, Requested 1274. Please try again in 1.8825s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+STATUS: error
+------------------------------------------------------------
+
+QUESTION 12: Why is hierarchical sequence modeling useful?
+EXPECTED PAPER: 2507.07955
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 4
+Text: Hierarchical Chunking: From Data to Abstractions
+Beyond addressing tokenization, H-Net improves general sequence modeling across a wide range of settings. Subword
+tokenization in language models is a special case of chunking—the process of building higher-level abstractions from
+low-level data—and is a central component of intelligence.4 Crucially, because H-Net is fully end-to-end, it can be iterated
+recursively: the main network can itself be an H-Net . Intuitively, more stages of chunking represent higher order
+meanings; just as characters can be combined into words, words can be combined into clauses, sentences, and beyond.
+Iterating the hierarchy should therefore lead to even more efficient use of compute and parameters, and more effective
+reasoning over compressed representations.
+Recursive H-Nets represent a new class of foundation model architectures that not only overcome tokenization, but discover
+and operate over abstractions learned from raw data, leading to higher-quality models with less pre-processing. Iterating the
+1-stage H-Net to 2 hierarchical stages further improves its capabilities and strongly outperforms all baselines, with steeper
+training curves and better 
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 31
+Text: A Related Work
+The fundamental challenge of transforming raw sequential data into computationally efficient representations manifests
+across multiple domains through implicit chunking processes. In language modeling, this challenge is addressed through
+tokenization using static vocabularies derived from frequency-based algorithms such as Byte-Pair Encoding (BPE) (Sennrich,
+Haddow, and Birch 2015) in GPT models (Radford et al. 2019; Brown et al. 2020) and SentencePiece (Kudo and Richardson
+2018) in Llama architectures (Touvron, Martin, et al. 2023; Grattafiori et al. 2024). Computer vision addresses similar
+challenges through spatial pooling operations (Ronneberger, Fischer, and Brox 2015) that aggregate neighboring pixels
+into meaningful representations.
+Despite achieving strong empirical performance, it is widely known that traditional tokenization approaches in language
+models suffer from fundamental limitations that constrain model capabilities. Fixed vocabularies exhibit biases toward high-
+resource languages, demonstrate fragility when handling adversarial inputs, and show lower performance on character-level
+tasks (Petrov et al. 2023; Ahia, Kumar, Gonen, Kasai, et al. 2023; B
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 2
+Text: • Direct byte-level language modeling with isotropic architectures3 can be improved with efficient sequence models
+such as MambaByte (Wang et al. 2024), but still incur prohibitive computational costs while underperforming
+tokenized models in compute-matched settings.
+• To improve efficiency, hierarchical architectures such as Hourglass Transformer (Nawrot, Tworkowski, et al. 2022)
+and MegaByte (Yu, Simig, et al. 2023) use small byte-level models to compress raw inputs into subsampled sequences,
+which are then processed with a more powerful standard language model. However, simple pooling strategies such
+as compressing every𝑘 inputs are not data-dependent, and perform poorly on modalities with variable information
+rates such as language.
+• SpaceByte (Slagle 2024) and Byte Latent Transformer (Pagnoni et al. 2024) introduce data-dependent chunking
+strategies such as delimiter- or entropy-based heuristics. These heuristics, however, rely on auxiliary external
+boundary predictors, and are therefore modality-specific and not fully end-to-end.
+• Although jointly trainable boundary predictors are the ideal solution, they require optimizing discrete selection
+operations without supervision
+
+ANSWER:
+REQUEST ERROR: RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m70101z9en9tk3jjsr213xt1` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 6930, Requested 1206. Please try again in 1.02s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+STATUS: error
+------------------------------------------------------------
+
+QUESTION 13: How does the paper describe chunk boundaries?
+EXPECTED PAPER: 2507.07955
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 6
+Text: • First, we ensure the model width (often referred to as𝑑model for isotropic architectures) is monotone in the hierarchy:
+𝐷0≤𝐷1≤···≤ 𝐷𝑆. This allows increasing compute and parameters used in the main network without significantly
+increasing its depth.
+• Second, using efficient and powerful SSM layers in the outer networks allow reducing the number of layers used
+compared to similar prior architectures that only used Transformer layers (Slagle 2024); in this paper, we always
+stick to four layers (or the equivalent of four Mamba layers) in each encoder/decoder network.
+To handle the changes in dimensions without an additional linear layer, we adopt the technique used in SpaceByte (Slagle
+2024) with the marginal change: to expand dimensions (i.e.,𝐷𝑠→𝐷𝑠+1), we append all vectors with a shared trainable vector
+of dimension𝐷𝑠+1−𝐷𝑠; to reduce dimensions (i.e.,𝐷𝑠+1→𝐷𝑠), we take the first𝐷𝑠 dimensions from each vector.
+We note that H-Net’s performance can likely be improved with more careful tuning of the layer allocation and hyperpa-
+rameters between sub-networks.
+2.2 Dynamic Chunking (DC)
+H-Net learns chunking boundaries through end-to-end training, allowing it to identify semantically me
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 5
+Text: in Figure 1-(Left). Throughout this paper, we use superscripts to denote stage indices, though we omit them when all
+variables within an equation belong to the same stage.
+Drawing inspiration from the U-Net architecture (Ronneberger, Fischer, and Brox 2015), H-Net progressively compresses
+input sequences into fewer vectors with richer semantic embeddings through a chunking layer, processes these representa-
+tions in the main network, then decompresses the sequence back to its original resolution using a dechunking layer. Unlike
+traditional U-Net designs, however, H-Net dynamically determines chunking boundaries rather than using fixed-size
+pooling operations. The overall pipeline can be formalized as:
+ˆ𝑥𝑠 =E𝑠(𝑥𝑠), ˆ𝑧𝑆 =M(𝑥𝑆), ˆ𝑧𝑠 =D𝑠(𝑧𝑠), (1)
+where the chunking layer and the dechunking layer operations are defined as:
+(𝑥𝑠+1,𝑝𝑠) = Chunk( ˆ𝑥𝑠), (2) 𝑧𝑠 = Dechunk( ˆ𝑧𝑠+1,𝑝𝑠)+ Linear( ˆ𝑥𝑠). (3)
+The initial input to the model is𝑥0∈ R𝐿0×𝐷0 where𝐿0 is the input sequence length and𝐷0 is the embedding dimension.
+Intuitively,𝑝𝑠∈[ 0, 1]𝐿𝑠 represents the chunking router’s confidence that the token should be passed into the main stage. 7
+This value is essential for both the chunk (Section 2.2.1) 
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 3
+Text: 	D
+4NPPUIJOH.PEVMF
+nd of toke sTh e _ _
+ℰ
+$IVOLJOH
+!he_end_of_tokens
+!
+%FDIVOLJOH
+̂.
+̅.
+'!'!"#'!"$'!"%
+1−'!1−'!"#1−'!"$
+	E
+6QTBNQMFS
+	C
+%PXOTBNQMFS
+	B
+3PVUJOH.PEVMF
+/0
+-
+/0"
+0"#$
+*
+̅.
++"
+%ZOBNJD$IVOLJOHn_e
+ℳ
+Figure 1: (left) Architectural overview of H-Net with a two-stage hierarchical design (𝑆 = 2). (right) Dynamic Chunking
+(DC). ( bottom-right ) Key components of a chunking layer: (a) a routing module for dynamically drawing chunk
+boundaries, and (b) a downsampler that selectively retains vectors based on boundary indicators, reducing sequence length
+while preserving semantically significant positions. ( top-right ) Key components of a dechunking layer: (c) a smoothing
+module for converting discrete chunks into interpolated representations, and (d) an upsampler that restores compressed
+vectors to their original resolution based on boundary indicators. Linear in equation (3) and STE in equation (9) are omitted
+in the illustration for brevity.
+language model: with a single stage of dynamic chunking, a byte-level H-Net matches the perplexity and downstream
+performance of a strong BPE-tokenized Transformer at sizes exceeding 1B parameters. Empirically, the dynamic
+chunking mo
+
+ANSWER:
+REQUEST ERROR: RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m70101z9en9tk3jjsr213xt1` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 6857, Requested 1519. Please try again in 2.82s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+STATUS: error
+------------------------------------------------------------
+
+QUESTION 14: What is the purpose of hierarchical modeling?
+EXPECTED PAPER: 2507.07955
+ANSWERABLE: True
+RETRIEVED PASSAGES:
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 21
+Text: Table 6: Related architectures. Comparison of related architectures, particularly those focused on byte-level modeling.
+H-Net is the first architecture that enables dynamic, multi-stage hierarchies. Extended discussion is provided in Appendix A.
+Class Autoregressive Chunking Mechanism Multi-stage Example ArchitecturesHierarchy
+Isotropic ✗ — — ByT5
+✓ — — MambaByte
+Hierarchical (static)
+✗ 𝑘-width pooling ✓
+Funnel-Transformer
+Canine
+Charformer
+✓ 𝑘-width pooling ✓
+Hourglass Transformer
+SaShiMi
+MegaByte
+Block Transformer
+MBLM
+AU-Net 3
+Hierarchical (external)
+✗ delimiters ✗ eByte WSF
+✓
+delimiters ✗
+DPT (Whitespaces)
+SpaceByte
+AU-Net 2
+entropy ✗ DPT (Entropy) BLT
+Hierarchical (dynamic) ✓
+soft matching ✗ MANTa
+soft gating ✗ MrT5
+stochastic reparameterization ✗ DPT (Gumbel)
+Hierarchical (dynamic) ✓ dynamic chunking ✓ H-Net
+21
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 4
+Text: Hierarchical Chunking: From Data to Abstractions
+Beyond addressing tokenization, H-Net improves general sequence modeling across a wide range of settings. Subword
+tokenization in language models is a special case of chunking—the process of building higher-level abstractions from
+low-level data—and is a central component of intelligence.4 Crucially, because H-Net is fully end-to-end, it can be iterated
+recursively: the main network can itself be an H-Net . Intuitively, more stages of chunking represent higher order
+meanings; just as characters can be combined into words, words can be combined into clauses, sentences, and beyond.
+Iterating the hierarchy should therefore lead to even more efficient use of compute and parameters, and more effective
+reasoning over compressed representations.
+Recursive H-Nets represent a new class of foundation model architectures that not only overcome tokenization, but discover
+and operate over abstractions learned from raw data, leading to higher-quality models with less pre-processing. Iterating the
+1-stage H-Net to 2 hierarchical stages further improves its capabilities and strongly outperforms all baselines, with steeper
+training curves and better 
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 2
+Text: • Direct byte-level language modeling with isotropic architectures3 can be improved with efficient sequence models
+such as MambaByte (Wang et al. 2024), but still incur prohibitive computational costs while underperforming
+tokenized models in compute-matched settings.
+• To improve efficiency, hierarchical architectures such as Hourglass Transformer (Nawrot, Tworkowski, et al. 2022)
+and MegaByte (Yu, Simig, et al. 2023) use small byte-level models to compress raw inputs into subsampled sequences,
+which are then processed with a more powerful standard language model. However, simple pooling strategies such
+as compressing every𝑘 inputs are not data-dependent, and perform poorly on modalities with variable information
+rates such as language.
+• SpaceByte (Slagle 2024) and Byte Latent Transformer (Pagnoni et al. 2024) introduce data-dependent chunking
+strategies such as delimiter- or entropy-based heuristics. These heuristics, however, rely on auxiliary external
+boundary predictors, and are therefore modality-specific and not fully end-to-end.
+• Although jointly trainable boundary predictors are the ideal solution, they require optimizing discrete selection
+operations without supervision
+
+ANSWER:
+Hierarchical modeling builds higher‑level “chunks” of data from low‑level units (e.g., bytes → words → sentences). The goal is to reduce sequence length and capture structure that simple tokenisation or fixed‑size pooling misses. By compressing raw inputs into a smaller, more informative representation, hierarchical models can use a powerful language‑model head on fewer tokens, saving compute while improving reasoning over the compressed sequence. In the H‑Net paper, recursive hierarchy lets the model learn new abstractions in each stage, leading to better performance and more efficient use of parameters【Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955 v2, p. 4】. The architecture also avoids fixed pooling or external delimiters, making the process end‑to‑end and data‑dependent【Dynamic Chunking for End-to-End Hierarchical Sequence Modeling, arXiv:2507.07955 v2, p. 21】.
+STATUS: ok
+------------------------------------------------------------
+
+QUESTION 15: Who won the FIFA World Cup in 2022?
+EXPECTED PAPER: None
+ANSWERABLE: False
+RETRIEVED PASSAGES:
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 63
+Text: Moshi: a speech-text foundation model for real-time dialogue
+USER: Hello, I wanted to talk to you about The Three Musketeers.
+MOSHI: Of course, happy to help! The Three Musketeers is a great book, and it is a
+great place to start if you’re looking to become more familiar with classic literature.
+USER: Wow, this is fantastic. Can you tell me more about the story?
+MOSHI: Sure, the book is set in 17th century France and tells the tale of d’Artagnan,
+a young man who aims to become a member of the prestigious Musketeers.
+USER: So what is the story about?
+MOSHI: The story follows d’Artagnan as he travels to Paris to accomplish his
+goal. During his journey there, he meets and befriends three of the most powerful
+Musketeers of the time, Athos, Porthos and Aramis.
+USER: Wow, it sounds exciting. What else does the story focus on?
+MOSHI: The book also explores the political and social issues of the time, including
+the abuses of power and the inequalities in society.
+USER: That sounds interesting. Can you tell me more about the characters?
+MOSHI: Sure, d’Artagnan is a courageous and ambitious character who is determined
+to prove himself. Athos, Porthos and Aramis are all experienced and skille
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 43
+Text: Moshi: a speech-text foundation model for real-time dialogue
+Nicholas Carlini, Daphne Ippolito, Matthew Jagielski, Katherine Lee, Florian Tramer, and
+Chiyuan Zhang. Quantifying memorization across neural language models. arXiv preprint
+arXiv:2202.07646, 2022. 37
+¨Ozg¨ ur C ¸ etin and Elizabeth Shriberg. Analysis of overlaps in meetings by dialog factors, hot
+spots, speakers, and collection site: insights for automatic speech recognition. In Ninth
+International Conference on Spoken Language Processing, INTERSPEECH-ICSLP 2006,
+Pittsburgh, PA, USA, September 17-21, 2006 . ISCA, 2006. 2
+Sanyuan Chen, Chengyi Wang, Zhengyang Chen, Yu Wu, Shujie Liu, Zhuo Chen, Jinyu Li,
+Naoyuki Kanda, Takuya Yoshioka, Xiong Xiao, Jian Wu, Long Zhou, Shuo Ren, Yanmin
+Qian, Yao Qian, Jian Wu, Michael Zeng, Xiangzhan Yu, and Furu Wei. Wavlm: Large-
+scale self-supervised pre-training for full stack speech processing. IEEE J. Sel. Top. Signal
+Process., 2022. 4, 10, 11, 38
+Aakanksha Chowdhery, Sharan Narang, Jacob Devlin, Maarten Bosma, Gaurav Mishra,
+Adam Roberts, Paul Barham, Hyung Won Chung, Charles Sutton, Sebastian Gehrmann,
+Parker Schuh, Kensen Shi, Sasha Tsvyashchenko, Joshua Maynez, Abhishek B Rao,
+Pa
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 42
+Text: Moshi: a speech-text foundation model for real-time dialogue
+their help. We also thank Alice, the voice artist who strived to give Moshi online demo its
+voice, Elie Raffier who built the user interface for this demo, and Hugging Face for inference
+compute donation. Audio training data set was built with the help of Noatune Studios and
+Landospeech. Model training was conducted at Scaleway.
+References
+Scott Aaronson and Hendrik Kirchner. Watermarking gpt outputs, 2023. URL https:
+//www.scottaaronson.com/talks/watermark.ppt. 39
+Ebtesam Almazrouei, Hamza Alobeidli, Abdulaziz Alshamsi, Alessandro Cappelli, Ruxan-
+dra Cojocaru, M´ erouane Debbah, ´Etienne Goffinet, Daniel Hesslow, Julien Launay,
+Quentin Malartic, et al. The falcon series of open language models. arXiv preprint
+arXiv:2311.16867, 2023. 22
+Alexei Baevski, Henry Zhou, Abdelrahman Mohamed, and Michael Auli. wav2vec 2.0: A
+framework for self-supervised learning of speech representations. arXiv:2006.11477, 2020.
+4, 9
+Jonathan Berant, Andrew K. Chou, Roy Frostig, and Percy Liang. Semantic parsing on
+freebase from question-answer pairs. In Conference on Empirical Methods in Natural
+Language Processing, 2013. 29
+Yonatan Bisk, Rowa
+
+ANSWER:
+REQUEST ERROR: RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m70101z9en9tk3jjsr213xt1` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 7856, Requested 1441. Please try again in 9.7275s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+STATUS: error
+------------------------------------------------------------
+
+QUESTION 16: What is the current price of Bitcoin?
+EXPECTED PAPER: None
+ANSWERABLE: False
+RETRIEVED PASSAGES:
+
+Paper: Dynamic Chunking for End-to-End Hierarchical Sequence Modeling
+arXiv: 2507.07955 v2
+PDF page: 9
+Text: This addition of a normalization layer addresses a critical challenge in hierarchical architectures. Pre-normalization allows
+residual stream magnitudes to grow unbounded through successive layers, with feature norms increasing monotonically.
+For H-Net, this poses a particular problem: the architecture leverages residual connections to preserve fine-grained
+information across stages. Without network normalization, outputs from deeper components (especially the many-layered
+main network) would dominate the residual signals from earlier encoder networks through imbalanced feature norms,
+neglecting the fine-grained details that are essential for decompression. The normalization layers restore balance between
+processed features and residual information, ensuring both contribute meaningfully to the final representation.
+Separation of Two Streams. Encoder outputs ( ˆ𝑥) serve dual purposes in our architecture: passing fine-grained infor-
+mation to corresponding decoders through residual connections, and providing compressed representations as inputs
+to subsequent stages. This dual functionality creates a design challenge, as these two roles may benefit from different
+representations. We c
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 1
+Text: Moshi: a speech-text foundation model for real-time dialogue
+Moshi: a speech-text foundation model for real-time dialogue
+Alexandre D´ efossez∗ alex@kyutai.org
+Laurent Mazar´ e∗
+Manu Orsini
+Am´ elie Royer
+Patrick P´ erez
+Herv´ e J´ egou
+Edouard Grave∗
+Neil Zeghidour∗ neil@kyutai.org
+Kyutai
+∗Equal contribution
+Abstract
+We introduce Moshi, a speech-text foundation model and full-duplex spoken dialogue frame-
+work. Current systems for spoken dialogue rely on pipelines of independent components,
+namely voice activity detection, speech recognition, textual dialogue and text-to-speech.
+Such frameworks cannot emulate the experience of real conversations. First, their complex-
+ity induces a latency of several seconds between interactions. Second, text being the inter-
+mediate modality for dialogue, non-linguistic information that modifies meaning— such as
+emotion or non-speech sounds— is lost in the interaction. Finally, they rely on a segmenta-
+tion into speaker turns, which does not take into account overlapping speech, interruptions
+and interjections. Moshi solves these independent issues altogether by casting spoken dia-
+logue as speech-to-speech generation. Starting from a text langua
+
+Paper: Moshi: a speech-text foundation model for real-time dialogue
+arXiv: 2410.00037 v1
+PDF page: 13
+Text: Moshi: a speech-text foundation model for real-time dialogue
+Figure 3: Architecture of the RQ-T ransformer. The RQ-Transformer breaks down a
+flattened sequence of length K · S into S timesteps for a large Temporal Transformer which
+produces a context embedding used to condition a smaller Depth Transformer over K steps.
+This allows scaling to longer sequences by increasing S—or to a higher depth by increasing
+K— than modeling the flattened sequence with a single model. In this figure, we use K = 4
+for the sake of illustration.
+the K sequences into a single one, increasing the number of predictions by K. Lee et al.
+(2022) propose using a smaller autoregressive model along the dimension K, combined with
+a larger model along the time dimension, forming a RQ-Transformer. Later, Yu et al. (2024)
+suggested a similar approach for byte-level modeling.
+RQ-T ransformer. Formally, the RQ-Transformer consists in two Transformer models,
+as illustrated in Figure 3. It consists of a Temporal Transformer, e.g. with the same archi-
+tecture as the one described for Helium in Section 3.2, and a smaller Depth Transformer.
+We denote Tr Temp the function represented by the Temporal Transformer, and Tr De
+
+ANSWER:
+REQUEST ERROR: RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m70101z9en9tk3jjsr213xt1` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 7814, Requested 1218. Please try again in 7.74s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+STATUS: error
+------------------------------------------------------------
